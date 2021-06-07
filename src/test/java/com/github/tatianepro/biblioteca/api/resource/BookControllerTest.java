@@ -1,5 +1,6 @@
 package com.github.tatianepro.biblioteca.api.resource;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tatianepro.biblioteca.api.dto.BookDto;
 import com.github.tatianepro.biblioteca.model.entity.Books;
@@ -20,6 +21,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -54,7 +59,7 @@ public class BookControllerTest {
 
         mockMvc
                 .perform(mockRequest)
-                .andExpect( MockMvcResultMatchers.status().isCreated() )
+                .andExpect( status().isCreated() )
                 .andExpect( MockMvcResultMatchers.jsonPath("id").value(10L) )
                 .andExpect( MockMvcResultMatchers.jsonPath("title").value("As aventuras") )
                 .andExpect( MockMvcResultMatchers.jsonPath("author").value("Artur") )
@@ -65,7 +70,19 @@ public class BookControllerTest {
 
     @Test
     @DisplayName("Deve lançar erro de validação quando não houver dados suficientes para criação de um livro.")
-    public void createInvalidBookTest() {
+    public void createInvalidBookTest() throws Exception {
+
+        String json = new ObjectMapper().writeValueAsString(new BookDto()); // instancia nova instância nula
+
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
+                .post(BOOK_API)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        mockMvc.perform(mockRequest)
+                .andExpect( status().isBadRequest() )
+                .andExpect( jsonPath( "errors", hasSize(3) ) );
 
     }
 
