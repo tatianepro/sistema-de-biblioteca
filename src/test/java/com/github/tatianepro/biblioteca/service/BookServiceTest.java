@@ -1,8 +1,10 @@
 package com.github.tatianepro.biblioteca.service;
 
+import com.github.tatianepro.biblioteca.api.exception.BusinessException;
 import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.model.repository.BookRepository;
 import com.github.tatianepro.biblioteca.service.impl.BookServiceImpl;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +34,8 @@ public class BookServiceTest {
     @DisplayName("Deve salvar um livro.")
     public void saveBookTest() {
         //cenario
-        Books book = Books.builder().title("As aventuras").author("Artur").isbn("9781234567897").build();
+        Books book = createNewBook();
+        Mockito.when(bookRepository.existsByIsbn(Mockito.anyString())).thenReturn(false);
         Mockito.when(bookRepository.save(book)).thenReturn(
                 Books.builder().id(1L).title("As aventuras").author("Artur").isbn("9781234567897").build());
 
@@ -44,6 +47,28 @@ public class BookServiceTest {
         assertThat(savedBook.getTitle()).isEqualTo("As aventuras");
         assertThat(savedBook.getAuthor()).isEqualTo("Artur");
         assertThat(savedBook.getIsbn()).isEqualTo("9781234567897");
+    }
+
+    @Test
+    @DisplayName("Deve lançar erro de negócio ao tentar salvar um livro com ISBN duplicado")
+    public void shouldNotSaveABookWithDuplicatedISBN() {
+        //cenario
+        Books book = createNewBook();
+        Mockito.when(bookRepository.existsByIsbn(Mockito.anyString())).thenReturn(true);
+
+        //execucao
+        Throwable exception = Assertions.catchThrowable(() -> bookService.save(book));
+
+        //verificacao
+        assertThat(exception)
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Isbn já cadastrado.");
+
+        Mockito.verify(bookRepository, Mockito.never()).save(book); // simula que o repository nunca vai chamar o método save()
+    }
+
+    private Books createNewBook() {
+        return Books.builder().title("As aventuras").author("Artur").isbn("9781234567897").build();
     }
 
 }
