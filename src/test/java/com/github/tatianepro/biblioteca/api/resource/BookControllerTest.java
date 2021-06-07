@@ -3,12 +3,14 @@ package com.github.tatianepro.biblioteca.api.resource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tatianepro.biblioteca.api.dto.BookDto;
+import com.github.tatianepro.biblioteca.api.exception.BusinessException;
 import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.service.BookService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -44,7 +46,7 @@ public class BookControllerTest {
     @DisplayName("Deve criar um livro com sucesso.")
     public void createBookTest() throws Exception {
 
-        BookDto bookDto = BookDto.builder().title("As aventuras").author("Artur").isbn("9781234567897").build();
+        BookDto bookDto = createNewBookDto();
         Books savedBook = Books.builder().id(10L).title("As aventuras").author("Artur").isbn("9781234567897").build();
 
         BDDMockito.given(bookService.save(Mockito.any(Books.class))).willReturn(savedBook);
@@ -68,6 +70,7 @@ public class BookControllerTest {
 
     }
 
+    // validação de integridade
     @Test
     @DisplayName("Deve lançar erro de validação quando não houver dados suficientes para criação de um livro.")
     public void createInvalidBookTest() throws Exception {
@@ -86,4 +89,33 @@ public class BookControllerTest {
 
     }
 
+    // validação de regra de negócio
+    @Test
+    @DisplayName("Deve lançar erro ao tentar cadastrar um livro com isbn já utilizado por outro.")
+    public void createBookWithoutDuplicatedIsbn() throws Exception {
+        BookDto bookDto = createNewBookDto();
+        String json = new ObjectMapper().writeValueAsString(bookDto);
+
+        String mensagemErro = "Isbn já cadastrado.";
+        BDDMockito.given(bookService.save(Mockito.any(Books.class)))
+                .willThrow(new BusinessException(mensagemErro));
+
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
+                .post(BOOK_API)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        mockMvc
+                .perform(mockRequest)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("errors", hasSize(1)))
+                .andExpect(jsonPath("errors[0]").value(mensagemErro));
+
+
+    }
+
+    private BookDto createNewBookDto() {
+        return BookDto.builder().title("As aventuras").author("Artur").isbn("9781234567897").build();
+    }
 }
