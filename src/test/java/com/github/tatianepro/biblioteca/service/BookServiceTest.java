@@ -107,6 +107,20 @@ public class BookServiceTest {
 
     }
 
+    @Test
+    @DisplayName("Deve deletar um livro.")
+    public void deleteTest() {
+        //cenario
+        Books book = Books.builder().id(1L).build();
+
+        //execucao
+        org.junit.jupiter.api.Assertions.assertDoesNotThrow( () -> bookService.delete(book));   // verifica que não lançou erro e chamou método delete
+
+        //verificacao
+        Mockito.verify(bookRepository, Mockito.times(1)).delete(book);
+
+    }
+
     private Books createNewBook() {
         return Books.builder().title("As aventuras").author("Artur").isbn("9781234567897").build();
     }
