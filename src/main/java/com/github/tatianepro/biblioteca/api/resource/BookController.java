@@ -53,13 +53,15 @@ public class BookController {
 
     @PutMapping("{id}")
     public BookDto put(@PathVariable Long id, @RequestBody BookDto bookDto) {
-        Books bookFound = bookService
+        return bookService
                 .getById(id)
-                .get();
-        bookFound.setTitle(bookDto.getTitle());
-        bookFound.setAuthor(bookDto.getAuthor());
-        Books updatedBook = bookService.update(bookFound);
-        return modelMapper.map(updatedBook, BookDto.class);
+                .map(book -> {
+                    book.setTitle(bookDto.getTitle());
+                    book.setAuthor(bookDto.getAuthor());
+                    Books updatedBook = bookService.update(book);
+                    return modelMapper.map(updatedBook, BookDto.class);
+                })
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -1,6 +1,5 @@
 package com.github.tatianepro.biblioteca.api.resource;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tatianepro.biblioteca.api.dto.BookDto;
 import com.github.tatianepro.biblioteca.api.exception.BusinessException;
@@ -26,7 +25,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -238,6 +236,27 @@ public class BookControllerTest {
                 .andExpect(jsonPath("title").value(createNewBookDto().getTitle()))
                 .andExpect(jsonPath("author").value(createNewBookDto().getAuthor()))
                 .andExpect(jsonPath("isbn").value("9781234567897"));
+    }
+
+    @Test
+    @DisplayName("Deve retornar 404 ao tentar atualizar um livro inexistente.")
+    public void updateInexistentBookTest() throws Exception {
+        //cenario
+        String json = new ObjectMapper().writeValueAsString(createNewBookDto());
+        BDDMockito.given(bookService.getById(Mockito.anyLong())).willReturn(Optional.empty());
+
+        //execucao
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
+                .put(BOOK_API.concat("/" + 1L))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        //verificacao
+        mockMvc
+                .perform(mockRequest)
+                .andExpect( status().isNotFound() );
+
     }
 
     private BookDto createNewBookDto() {
