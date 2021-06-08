@@ -141,6 +141,29 @@ public class BookServiceTest {
 
     }
 
+    @Test
+    @DisplayName("Deve atualizar um livro.")
+    public void updateBookTest() {
+        //cenario
+        Long id = 1L;
+        Books existingBook = Books.builder().id(1L).build();
+
+        //simulacao
+        Books updateBook = createNewBook();
+        updateBook.setId(id);
+        Mockito.when(bookRepository.save(existingBook)).thenReturn(updateBook);
+
+        //execucao
+        Books book = bookService.update(existingBook);
+
+        //verificacao
+        assertThat(book.getId()).isEqualTo(updateBook.getId());
+        assertThat(book.getTitle()).isEqualTo(updateBook.getTitle());
+        assertThat(book.getAuthor()).isEqualTo(updateBook.getAuthor());
+        assertThat(book.getIsbn()).isEqualTo(updateBook.getIsbn());
+    }
+
+
     private Books createNewBook() {
         return Books.builder().title("As aventuras").author("Artur").isbn("9781234567897").build();
     }

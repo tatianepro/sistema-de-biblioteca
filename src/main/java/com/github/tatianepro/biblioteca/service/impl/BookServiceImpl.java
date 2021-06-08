@@ -40,6 +40,6 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Books update(Books book) {
-        return null;
+        return this.repository.save(book);
     }
 }
