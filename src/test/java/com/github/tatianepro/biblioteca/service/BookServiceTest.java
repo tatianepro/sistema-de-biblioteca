@@ -163,6 +163,20 @@ public class BookServiceTest {
         assertThat(book.getIsbn()).isEqualTo(updateBook.getIsbn());
     }
 
+    @Test
+    @DisplayName("Deve ocorrer erro ao tentar atualizar um livro inexistente.")
+    public void updateInvalidBookTest() {
+        //cenario
+        Books book = new Books();
+
+        //execucao
+        assertThrows(IllegalArgumentException.class, () -> bookService.update(book));
+
+        //verificacao
+        Mockito.verify(bookRepository, Mockito.never()).delete(book);
+
+    }
+
 
     private Books createNewBook() {
         return Books.builder().title("As aventuras").author("Artur").isbn("9781234567897").build();
