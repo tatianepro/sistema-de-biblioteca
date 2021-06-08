@@ -29,4 +29,9 @@ public class BookServiceImpl implements BookService {
     public Optional<Books> getById(Long id) {
         return Optional.empty();
     }
+
+    @Override
+    public void delete(Books book) {
+
+    }
 }

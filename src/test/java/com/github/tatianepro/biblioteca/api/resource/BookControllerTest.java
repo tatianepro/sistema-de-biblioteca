@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.awt.print.Book;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -164,6 +165,25 @@ public class BookControllerTest {
         mockMvc
                 .perform(mockRequest)
                 .andExpect( status().isNotFound() );
+
+    }
+
+    @Test
+    @DisplayName("Deve deletar um livro.")
+    public void deleteBookTest() throws Exception {
+        //cenario
+        Long id = 1L;
+
+        //execucao
+        BDDMockito.given(bookService.getById(id)).willReturn(Optional.of(Books.builder().id(id).build()));
+
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
+                .delete(BOOK_API.concat("/" + id));
+
+        //verificacao
+        mockMvc
+                .perform(mockRequest)
+                .andExpect( status().isNoContent() );
 
     }
 

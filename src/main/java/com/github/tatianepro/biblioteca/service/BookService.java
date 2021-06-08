@@ -7,5 +7,6 @@ import java.util.Optional;
 public interface BookService {
     Books save(Books book);
     Optional<Books> getById(Long id);
+    void delete(Books book);
 }
 
