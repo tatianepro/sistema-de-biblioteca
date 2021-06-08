@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+//teste de design de interacao com usuario
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
 @WebMvcTest
