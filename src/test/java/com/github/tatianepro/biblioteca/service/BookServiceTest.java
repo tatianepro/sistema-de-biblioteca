@@ -17,6 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 //teste de regra de negócio
 @ExtendWith(SpringExtension.class)
@@ -114,10 +115,29 @@ public class BookServiceTest {
         Books book = Books.builder().id(1L).build();
 
         //execucao
-        org.junit.jupiter.api.Assertions.assertDoesNotThrow( () -> bookService.delete(book));   // verifica que não lançou erro e chamou método delete
+        org.junit.jupiter.api.Assertions
+                .assertDoesNotThrow( () -> bookService.delete(book));   // verifica que não lançou erro e chamou método delete
 
         //verificacao
         Mockito.verify(bookRepository, Mockito.times(1)).delete(book);
+
+    }
+
+    @Test
+    @DisplayName("Deve ocorrer erro ao tentar deletar um livro inexistente.")
+    public void deleteInvalidBookTest() {
+        //cenario
+        Books book = new Books();
+
+        //execucao
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> bookService.delete(book));
+        String expectedMessage = "Book id cannot be null";
+        String actualMessage = exception.getMessage();
+
+        //verificacao
+        Mockito.verify(bookRepository, Mockito.never()).delete(book);
+        org.junit.jupiter.api.Assertions
+                .assertTrue(actualMessage.contains(expectedMessage));
 
     }
 
