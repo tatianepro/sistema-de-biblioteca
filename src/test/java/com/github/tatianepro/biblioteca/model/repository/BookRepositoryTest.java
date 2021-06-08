@@ -73,6 +73,18 @@ public class BookRepositoryTest {
 
     }
 
+    @Test
+    @DisplayName("Deve salvar um livro.")
+    public void saveBookTest() {
+        //cenario
+        Books book = Books.builder().isbn("9781234567897").build();
+
+        //execucao
+        Books savedBook = bookRepository.save(book);
+
+        //verificacao
+        Assertions.assertThat( savedBook.getId() ).isNotNull();
+    }
 
 
 
