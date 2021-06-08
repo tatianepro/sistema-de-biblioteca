@@ -1,6 +1,5 @@
 package com.github.tatianepro.biblioteca.api.resource;
 
-import ch.qos.logback.core.joran.action.NOPAction;
 import com.github.tatianepro.biblioteca.api.dto.BookDto;
 import com.github.tatianepro.biblioteca.api.exception.ApiErrors;
 import com.github.tatianepro.biblioteca.api.exception.BusinessException;
@@ -50,6 +49,17 @@ public class BookController {
                 .getById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         bookService.delete(book);
+    }
+
+    @PutMapping("{id}")
+    public BookDto put(@PathVariable Long id, @RequestBody BookDto bookDto) {
+        Books bookFound = bookService
+                .getById(id)
+                .get();
+        bookFound.setTitle(bookDto.getTitle());
+        bookFound.setAuthor(bookDto.getAuthor());
+        Books updatedBook = bookService.update(bookFound);
+        return modelMapper.map(updatedBook, BookDto.class);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -1,5 +1,6 @@
 package com.github.tatianepro.biblioteca.api.resource;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tatianepro.biblioteca.api.dto.BookDto;
 import com.github.tatianepro.biblioteca.api.exception.BusinessException;
@@ -25,6 +26,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -196,11 +198,46 @@ public class BookControllerTest {
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
                 .delete(BOOK_API.concat("/" + 1L));
 
-        //validacao
+        //verificacao
         mockMvc
                 .perform(mockRequest)
                 .andExpect( status().isNotFound() );
 
+    }
+
+    @Test
+    @DisplayName("Deve atualizar um livro")
+    public void updateBookTest() throws Exception {
+        //cenario
+        Long id = 1L;
+        String json = new ObjectMapper().writeValueAsString(createNewBookDto());
+        Books updatingBook = Books.builder().title("Some title").author("some Author").isbn("9781234567899").build();
+        BDDMockito.given(bookService.getById(id)).willReturn(Optional.of(updatingBook));
+        Books updatedBook = Books
+                .builder()
+                .id(id)
+                .title(createNewBookDto().getTitle())
+                .author(createNewBookDto().getAuthor())
+                .isbn("9781234567897")
+                .build();
+
+        BDDMockito.given(bookService.update(updatingBook)).willReturn(updatedBook);
+
+        //execucao
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
+                .put(BOOK_API.concat("/" + id))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        //verificacao
+        mockMvc
+                .perform(mockRequest)
+                .andExpect( status().isOk() )
+                .andExpect(jsonPath("id").value(id))
+                .andExpect(jsonPath("title").value(createNewBookDto().getTitle()))
+                .andExpect(jsonPath("author").value(createNewBookDto().getAuthor()))
+                .andExpect(jsonPath("isbn").value("9781234567897"));
     }
 
     private BookDto createNewBookDto() {
