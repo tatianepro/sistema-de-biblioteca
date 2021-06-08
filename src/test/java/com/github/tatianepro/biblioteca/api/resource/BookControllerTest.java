@@ -1,6 +1,5 @@
 package com.github.tatianepro.biblioteca.api.resource;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tatianepro.biblioteca.api.dto.BookDto;
 import com.github.tatianepro.biblioteca.api.exception.BusinessException;
@@ -10,7 +9,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -23,6 +21,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -93,7 +93,7 @@ public class BookControllerTest {
     // validação de regra de negócio
     @Test
     @DisplayName("Deve lançar erro ao tentar cadastrar um livro com isbn já utilizado por outro.")
-    public void createBookWithoutDuplicatedIsbn() throws Exception {
+    public void createBookWithoutDuplicatedIsbnTest() throws Exception {
         BookDto bookDto = createNewBookDto();
         String json = new ObjectMapper().writeValueAsString(bookDto);
 
@@ -114,6 +114,38 @@ public class BookControllerTest {
                 .andExpect(jsonPath("errors[0]").value(mensagemErro));
 
 
+    }
+
+    @Test
+    @DisplayName("Deve obter informações de um livro.")
+    public void getBookDetailsTest() throws Exception {
+        //cenario
+        Long id = 1L;
+
+        Books book = Books
+                .builder()
+                .id(id)
+                .title(createNewBookDto().getTitle())
+                .author(createNewBookDto().getAuthor())
+                .isbn(createNewBookDto().getIsbn())
+                .build();
+
+        BDDMockito.given(bookService.getById(id)).willReturn(Optional.of(book));
+
+        //execucao
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
+                .get(BOOK_API.concat("/" + id))
+                .accept(MediaType.APPLICATION_JSON);
+
+        //verificacao
+        mockMvc
+                .perform(mockRequest)
+                .andExpect( status().isOk() )
+                .andExpect( jsonPath("id").value(id) )
+                .andExpect( jsonPath("title").value(createNewBookDto().getTitle()) )
+                .andExpect( jsonPath("author").value(createNewBookDto().getAuthor()) )
+                .andExpect( jsonPath("isbn").value(createNewBookDto().getIsbn()) )
+                ;
     }
 
     private BookDto createNewBookDto() {
