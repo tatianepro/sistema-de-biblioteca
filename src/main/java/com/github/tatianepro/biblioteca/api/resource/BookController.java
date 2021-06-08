@@ -6,6 +6,9 @@ import com.github.tatianepro.biblioteca.api.exception.BusinessException;
 import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.service.BookService;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/books")
@@ -62,6 +67,17 @@ public class BookController {
                     return modelMapper.map(updatedBook, BookDto.class);
                 })
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    @GetMapping
+    public Page<BookDto> find(BookDto bookDto, Pageable pageRequest) {
+        Books filter = modelMapper.map(bookDto, Books.class);
+        Page<Books> pageResult = bookService.find(filter, pageRequest);
+        List<BookDto> bookListDto = pageResult.getContent()
+                .stream()
+                .map(book -> modelMapper.map(book, BookDto.class))
+                .collect(Collectors.toList());
+        return new PageImpl<BookDto>(bookListDto, pageRequest, pageResult.getTotalElements());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

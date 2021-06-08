@@ -4,6 +4,8 @@ import com.github.tatianepro.biblioteca.api.exception.BusinessException;
 import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.model.repository.BookRepository;
 import com.github.tatianepro.biblioteca.service.BookService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -44,5 +46,10 @@ public class BookServiceImpl implements BookService {
             throw new IllegalArgumentException("Book id cannot be null");
         }
         return this.repository.save(book);
+    }
+
+    @Override
+    public Page<Books> find(Books filter, Pageable pageRequest) {
+        return null;
     }
 }
