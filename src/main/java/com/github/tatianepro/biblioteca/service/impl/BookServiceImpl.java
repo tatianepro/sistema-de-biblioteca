@@ -22,12 +22,12 @@ public class BookServiceImpl implements BookService {
         if (repository.existsByIsbn(book.getIsbn())) {
             throw new BusinessException("Isbn já cadastrado.");
         }
-        return repository.save(book);
+        return this.repository.save(book);
     }
 
     @Override
     public Optional<Books> getById(Long id) {
-        return Optional.empty();
+        return this.repository.findById(id);
     }
 
     @Override

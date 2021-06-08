@@ -14,6 +14,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 //teste de regra de negócio
@@ -66,6 +68,27 @@ public class BookServiceTest {
                 .hasMessage("Isbn já cadastrado.");
 
         Mockito.verify(bookRepository, Mockito.never()).save(book); // simula que o repository nunca vai chamar o método save()
+    }
+
+    @Test
+    @DisplayName("Deve obter um livro por id")
+    public void getByIdTest() {
+        //cenario
+        Long id = 1L;
+        Books book = createNewBook();
+        book.setId(id);
+
+        Mockito.when(bookRepository.findById(id)).thenReturn(Optional.of(book));
+
+        //execucao
+        Optional<Books> bookFound = bookService.getById(id);
+
+        //verificacao
+        assertThat( bookFound.isPresent() ).isTrue();
+        assertThat( bookFound.get().getId() ).isEqualTo(id);
+        assertThat( bookFound.get().getTitle() ).isEqualTo(createNewBook().getTitle());
+        assertThat( bookFound.get().getAuthor() ).isEqualTo(createNewBook().getAuthor());
+        assertThat( bookFound.get().getIsbn() ).isEqualTo(createNewBook().getIsbn());
     }
 
     private Books createNewBook() {
