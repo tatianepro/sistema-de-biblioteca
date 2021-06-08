@@ -91,6 +91,22 @@ public class BookServiceTest {
         assertThat( bookFound.get().getIsbn() ).isEqualTo(createNewBook().getIsbn());
     }
 
+    @Test
+    @DisplayName("Deve retornar vazio ao obter um livro por Id quando ele não existe na base de dados.")
+    public void bookNotFoundByIdTest() {
+        //cenario
+        Long id = 1L;
+
+        Mockito.when(bookRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
+
+        //execucao
+        Optional<Books> bookNotFound = bookService.getById(id);
+
+        //verificacao
+        assertThat( bookNotFound.isPresent() ).isFalse();
+
+    }
+
     private Books createNewBook() {
         return Books.builder().title("As aventuras").author("Artur").isbn("9781234567897").build();
     }
