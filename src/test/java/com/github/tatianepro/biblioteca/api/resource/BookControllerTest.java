@@ -148,6 +148,25 @@ public class BookControllerTest {
                 ;
     }
 
+    @Test
+    @DisplayName("Deve retornar resource not found quando o livro procurado não existir.")
+    public void bookNotFoundTest() throws Exception {
+        //cenario
+        Long id = 1L;
+        BDDMockito.given(bookService.getById(Mockito.anyLong())).willReturn(Optional.empty());
+
+        //execucao
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
+                .get(BOOK_API.concat("/" + id))
+                .accept(MediaType.APPLICATION_JSON);
+
+        //verificacao
+        mockMvc
+                .perform(mockRequest)
+                .andExpect( status().isNotFound() );
+
+    }
+
     private BookDto createNewBookDto() {
         return BookDto.builder().title("As aventuras").author("Artur").isbn("9781234567897").build();
     }
