@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //teste de design de interacao com usuario
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
-@WebMvcTest
+@WebMvcTest(controllers = BookController.class)
 @AutoConfigureMockMvc
 public class BookControllerTest {
 
