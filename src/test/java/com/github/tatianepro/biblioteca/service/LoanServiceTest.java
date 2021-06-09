@@ -1,5 +1,6 @@
 package com.github.tatianepro.biblioteca.service;
 
+import com.github.tatianepro.biblioteca.api.exception.BusinessException;
 import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.model.entity.Loan;
 import com.github.tatianepro.biblioteca.model.repository.LoanRepository;
@@ -15,6 +16,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
+
+import static org.assertj.core.api.ThrowableAssert.catchThrowable;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -41,6 +44,7 @@ public class LoanServiceTest {
         Loan savingLoan = Loan.builder().customer(customerName).book(book).loanDate(LocalDate.now()).build();
         Loan savedLoan = Loan.builder().id(id).customer(customerName).book(book).loanDate(LocalDate.now()).build();
 
+        Mockito.when(loanRepository.existsByBookAndNotReturned(savingLoan.getBook())).thenReturn(false);
         Mockito.when(loanRepository.save(savingLoan)).thenReturn(savedLoan);
 
         //execucao
@@ -53,4 +57,29 @@ public class LoanServiceTest {
         Assertions.assertThat(loan.getLoanDate()).isEqualTo(savedLoan.getLoanDate());
 
     }
+
+    @Test
+    @DisplayName("Deve lançar um erro de negócio ao salvar o empréstimo de um livro que já está emprestado.")
+    public void loanedBookErrorOnSaveLoanTest() {
+        //cenario
+        Books book = Books.builder().id(1L).build();
+        String customerName = "Fulano";
+
+        Loan savingLoan = Loan.builder().customer(customerName).book(book).loanDate(LocalDate.now()).build();
+
+        Mockito.when(loanRepository.existsByBookAndNotReturned(savingLoan.getBook())).thenReturn(true);
+
+        //execucao
+        Throwable exception = catchThrowable(() -> loanService.save(savingLoan));
+
+        //verificacao
+        Assertions.assertThat(exception)
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Book already borrowed.");
+
+        Mockito.verify(loanRepository, Mockito.never()).save(savingLoan);
+
+    }
+
+
 }
