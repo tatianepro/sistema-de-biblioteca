@@ -8,6 +8,7 @@ import com.github.tatianepro.biblioteca.service.LoanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 
@@ -23,7 +24,9 @@ public class LoanController {
     @ResponseStatus(HttpStatus.CREATED)
     public Long create(@RequestBody LoanDto loanDto) {
 
-        Books book = bookService.getBookByIsbn(loanDto.getIsbn()).get();
+        Books book = bookService
+                .getBookByIsbn(loanDto.getIsbn())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Book not found for passed isbn"));
         Loan loan = Loan
                 .builder()
                 .book(book)

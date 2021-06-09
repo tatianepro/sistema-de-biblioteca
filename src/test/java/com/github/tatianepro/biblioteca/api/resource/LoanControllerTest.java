@@ -6,6 +6,7 @@ import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.model.entity.Loan;
 import com.github.tatianepro.biblioteca.service.BookService;
 import com.github.tatianepro.biblioteca.service.LoanService;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -70,6 +71,30 @@ public class LoanControllerTest {
                 .andExpect( status().isCreated() )
                 .andExpect( content().string("1") );
 
+    }
+
+    @Test
+    @DisplayName("Deve retornar erro ao tentar fazer empréstimo de um livro inexistente.")
+    public void invalidIsbnCreateLoanTest() throws Exception {
+        //cenario
+        LoanDto loanDto = LoanDto.builder().isbn("9781234567897").customer("Fulano").build();
+        String json = new ObjectMapper().writeValueAsString(loanDto);
+
+        BDDMockito.given(bookService.getBookByIsbn("9781234567897")).willReturn(Optional.empty());
+
+        //execucao
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
+                .post(LOAN_API)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        //verificacao
+        mockMvc
+                .perform(mockRequest)
+                .andExpect( status().isBadRequest() )
+                .andExpect( jsonPath("errors", Matchers.hasSize(1)))
+                .andExpect( jsonPath("errors[0]").value("Book not found for passed isbn"));
     }
 
 }
