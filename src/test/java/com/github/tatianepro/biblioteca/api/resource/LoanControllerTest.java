@@ -2,6 +2,7 @@ package com.github.tatianepro.biblioteca.api.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tatianepro.biblioteca.api.dto.LoanDto;
+import com.github.tatianepro.biblioteca.api.exception.BusinessException;
 import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.model.entity.Loan;
 import com.github.tatianepro.biblioteca.service.BookService;
@@ -95,6 +96,33 @@ public class LoanControllerTest {
                 .andExpect( status().isBadRequest() )
                 .andExpect( jsonPath("errors", Matchers.hasSize(1)))
                 .andExpect( jsonPath("errors[0]").value("Book not found for passed isbn"));
+    }
+
+    @Test
+    @DisplayName("Deve retornar erro ao tentar fazer empréstimo de um livro emprestado.")
+    public void loanedBookErrorOnCreateLoanTest() throws Exception {
+        //cenario
+        LoanDto loanDto = LoanDto.builder().isbn("9781234567897").customer("Fulano").build();
+        String json = new ObjectMapper().writeValueAsString(loanDto);
+
+        Books book = Books.builder().id(1L).isbn("9781234567897").build();
+        BDDMockito.given(bookService.getBookByIsbn("9781234567897")).willReturn(Optional.of(book));
+
+        BDDMockito.given(loanService.save(Mockito.any(Loan.class))).willThrow(new BusinessException("Book already borrowed."));
+
+        //execucao
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
+                .post(LOAN_API)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        //verificacao
+        mockMvc
+                .perform(mockRequest)
+                .andExpect( status().isBadRequest() )
+                .andExpect( jsonPath("errors", Matchers.hasSize(1)))
+                .andExpect( jsonPath("errors[0]").value("Book already borrowed."));
     }
 
 }
