@@ -1,8 +1,6 @@
 package com.github.tatianepro.biblioteca.api.resource;
 
 import com.github.tatianepro.biblioteca.api.dto.BookDto;
-import com.github.tatianepro.biblioteca.api.exception.ApiErrors;
-import com.github.tatianepro.biblioteca.api.exception.BusinessException;
 import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.service.BookService;
 import org.modelmapper.ModelMapper;
@@ -10,8 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
