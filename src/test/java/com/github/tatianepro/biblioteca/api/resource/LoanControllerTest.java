@@ -18,6 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -26,6 +29,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Optional;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -168,6 +172,40 @@ public class LoanControllerTest {
                         .content(json)
                 ).andExpect( status().isNotFound() );
 
+    }
+
+    @Test
+    @DisplayName("Deve filtrar por empréstimos de livros.")
+    public void findBooksLoanTest() throws Exception {
+        //cenario
+        Long id = 1L;
+        Loan loan = creatingLoan();
+        loan.setId(id);
+
+        BDDMockito.given(loanService.find(Mockito.any(Loan.class), Mockito.any(Pageable.class)))
+                .willReturn( new PageImpl<Loan>(Arrays.asList(loan), PageRequest.of(0, 10), 1));
+
+        String query = String.format("?isbn=%s&customer=%s&page=0&size=10", loan.getBook().getIsbn(), loan.getCustomer());
+
+        //execucao
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
+                .get(LOAN_API.concat("/" + query))
+                .accept(MediaType.APPLICATION_JSON);
+
+        //verificacao
+        mockMvc
+                .perform(mockRequest)
+                .andExpect( status().isOk() )
+                .andExpect( jsonPath("content", Matchers.hasSize(1)));
+
+    }
+
+    private Loan creatingLoan() {
+        Books book = Books.builder().id(1L).isbn("9781234567897").build();
+        String customerName = "Fulano";
+
+        Loan savingLoan = Loan.builder().customer(customerName).book(book).loanDate(LocalDate.now()).build();
+        return savingLoan;
     }
 
 }

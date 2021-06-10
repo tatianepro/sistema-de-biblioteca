@@ -4,6 +4,8 @@ import com.github.tatianepro.biblioteca.api.exception.BusinessException;
 import com.github.tatianepro.biblioteca.model.entity.Loan;
 import com.github.tatianepro.biblioteca.model.repository.LoanRepository;
 import com.github.tatianepro.biblioteca.service.LoanService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -33,5 +35,10 @@ public class LoanServiceImpl implements LoanService {
     @Override
     public Loan update(Loan loan) {
         return loanRepository.save(loan);
+    }
+
+    @Override
+    public Page<Loan> find(Loan loan, Pageable pageRequest) {
+        return null;
     }
 }
