@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.ThrowableAssert.catchThrowable;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -100,6 +101,25 @@ public class LoanServiceTest {
         Assertions.assertThat(loanFound.get().getLoanDate()).isEqualTo(loan.getLoanDate());
 
         Mockito.verify(loanRepository).findById(id);
+    }
+
+    @Test
+    @DisplayName("Deve atualizar um empréstimo.")
+    public void updateLoanTest() {
+        //cenario
+        Loan loan = createLoan();
+        loan.setId(1L);
+        loan.setReturned(true);
+
+        Mockito.when(loanRepository.save(loan)).thenReturn(loan);
+
+        //execucao
+        Loan updatedLoan = loanService.update(loan);
+
+        //verificacao
+        Assertions.assertThat(updatedLoan.getReturned()).isTrue();
+
+        Mockito.verify(loanRepository).save(loan);
     }
 
     private Loan createLoan() {
