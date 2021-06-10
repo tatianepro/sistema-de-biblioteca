@@ -1,6 +1,5 @@
 package com.github.tatianepro.biblioteca.api.resource;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tatianepro.biblioteca.api.dto.LoanDto;
 import com.github.tatianepro.biblioteca.api.dto.ReturnedLoanDto;
@@ -148,6 +147,26 @@ public class LoanControllerTest {
                 ).andExpect( status().isOk() );
 
         Mockito.verify(loanService, Mockito.times(1)).update(loan);
+    }
+
+    @Test
+    @DisplayName("Deve retornar 404 quando tentar devolver um livro inexistente.")
+    public void returnInexistentBookTest() throws Exception {
+        //cenario
+        Long id = 1L;
+        ReturnedLoanDto dto = ReturnedLoanDto.builder().returned(true).build();
+        String json = new ObjectMapper().writeValueAsString(dto);
+
+        BDDMockito.given(loanService.getById(id)).willReturn(Optional.empty());
+
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .patch(LOAN_API.concat("/" + id))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                ).andExpect( status().isNotFound() );
+
     }
 
 }
