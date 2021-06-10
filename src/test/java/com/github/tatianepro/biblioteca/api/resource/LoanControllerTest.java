@@ -8,6 +8,7 @@ import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.model.entity.Loan;
 import com.github.tatianepro.biblioteca.service.BookService;
 import com.github.tatianepro.biblioteca.service.LoanService;
+import com.github.tatianepro.biblioteca.service.LoanServiceTest;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -179,7 +180,7 @@ public class LoanControllerTest {
     public void findBooksLoanTest() throws Exception {
         //cenario
         Long id = 1L;
-        Loan loan = creatingLoan();
+        Loan loan = LoanServiceTest.createLoan();
         loan.setId(id);
 
         BDDMockito.given(loanService.find(Mockito.any(Loan.class), Mockito.any(Pageable.class)))
@@ -198,14 +199,6 @@ public class LoanControllerTest {
                 .andExpect( status().isOk() )
                 .andExpect( jsonPath("content", Matchers.hasSize(1)));
 
-    }
-
-    private Loan creatingLoan() {
-        Books book = Books.builder().id(1L).isbn("9781234567897").build();
-        String customerName = "Fulano";
-
-        Loan savingLoan = Loan.builder().customer(customerName).book(book).loanDate(LocalDate.now()).build();
-        return savingLoan;
     }
 
 }

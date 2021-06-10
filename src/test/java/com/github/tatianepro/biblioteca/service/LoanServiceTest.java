@@ -12,14 +12,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.ThrowableAssert.catchThrowable;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -122,11 +126,38 @@ public class LoanServiceTest {
         Mockito.verify(loanRepository).save(loan);
     }
 
-    private Loan createLoan() {
-        Books book = Books.builder().id(1L).build();
-        String customerName = "Fulano";
+    @Test
+    @DisplayName("Deve filtrar empréstimos pelas propriedades.")
+    public void findBookLoanTest() {
+        //cenario
+        Long id = 1L;
+        Loan loan = createLoan();
+        loan.setId(id);
 
-        Loan savingLoan = Loan.builder().customer(customerName).book(book).loanDate(LocalDate.now()).build();
+        List<Loan> loans = Arrays.asList(loan);
+        PageRequest pageRequest = PageRequest.of(0, 10);
+
+        Page<Loan> loanPage = new PageImpl<Loan>(loans, pageRequest, loans.size());
+
+        Mockito.when(loanRepository
+                .findByBookIsbnOrCustomer(Mockito.anyString(), Mockito.anyString(), Mockito.any(PageRequest.class)))
+                .thenReturn(loanPage);
+
+        //execucao
+        Page<Loan> pageLoanResult = loanService.find(loan, pageRequest);
+
+        //verificacao
+        Assertions.assertThat(pageLoanResult.getTotalElements()).isEqualTo(loans.size());
+        Assertions.assertThat(pageLoanResult.getContent()).isEqualTo(loans);
+
+        Mockito.verify(loanRepository, Mockito.times(1))
+                .findByBookIsbnOrCustomer(loan.getBook().getIsbn(), loan.getCustomer(), pageRequest);
+
+    }
+
+    public static Loan createLoan() {
+        Books book = Books.builder().id(1L).isbn("9781234567897").build();
+        Loan savingLoan = Loan.builder().customer("Fulano").book(book).loanDate(LocalDate.now()).build();
         return savingLoan;
     }
 
