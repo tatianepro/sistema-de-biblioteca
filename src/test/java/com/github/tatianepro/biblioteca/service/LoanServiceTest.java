@@ -16,6 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.assertj.core.api.ThrowableAssert.catchThrowable;
 
@@ -62,10 +63,7 @@ public class LoanServiceTest {
     @DisplayName("Deve lançar um erro de negócio ao salvar o empréstimo de um livro que já está emprestado.")
     public void loanedBookErrorOnSaveLoanTest() {
         //cenario
-        Books book = Books.builder().id(1L).build();
-        String customerName = "Fulano";
-
-        Loan savingLoan = Loan.builder().customer(customerName).book(book).loanDate(LocalDate.now()).build();
+        Loan savingLoan = createLoan();
 
         Mockito.when(loanRepository.existsByBookAndNotReturned(savingLoan.getBook())).thenReturn(true);
 
@@ -81,5 +79,35 @@ public class LoanServiceTest {
 
     }
 
+    @Test
+    @DisplayName("Deve obter as informações de um empréstimo pelo ID")
+    public void getLoanDetailsTest() {
+        //cenario
+        Long id = 1L;
+        Loan loan = createLoan();
+        loan.setId(id);
+
+        Mockito.when(loanRepository.findById(id)).thenReturn(Optional.of(loan));
+
+        //execucao
+        Optional<Loan> loanFound = loanService.getById(id);
+
+        //verificacao
+        Assertions.assertThat(loanFound.isPresent()).isTrue();
+        Assertions.assertThat(loanFound.get().getId()).isEqualTo(loan.getId());
+        Assertions.assertThat(loanFound.get().getCustomer()).isEqualTo(loan.getCustomer());
+        Assertions.assertThat(loanFound.get().getBook()).isEqualTo(loan.getBook());
+        Assertions.assertThat(loanFound.get().getLoanDate()).isEqualTo(loan.getLoanDate());
+
+        Mockito.verify(loanRepository).findById(id);
+    }
+
+    private Loan createLoan() {
+        Books book = Books.builder().id(1L).build();
+        String customerName = "Fulano";
+
+        Loan savingLoan = Loan.builder().customer(customerName).book(book).loanDate(LocalDate.now()).build();
+        return savingLoan;
+    }
 
 }

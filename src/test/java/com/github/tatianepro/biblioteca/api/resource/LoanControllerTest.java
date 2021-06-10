@@ -159,6 +159,7 @@ public class LoanControllerTest {
 
         BDDMockito.given(loanService.getById(id)).willReturn(Optional.empty());
 
+        //execucao e verificacao
         mockMvc
                 .perform(MockMvcRequestBuilders
                         .patch(LOAN_API.concat("/" + id))
