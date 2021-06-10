@@ -111,7 +111,7 @@ public class BookRepositoryTest {
 
     }
 
-    private Books createNewBook() {
+    public static Books createNewBook() {
         return Books.builder().title("As aventuras").author("Fulano").isbn("9781234567897").build();
     }
 
