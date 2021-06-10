@@ -1,7 +1,9 @@
 package com.github.tatianepro.biblioteca.api.resource;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tatianepro.biblioteca.api.dto.LoanDto;
+import com.github.tatianepro.biblioteca.api.dto.ReturnedLoanDto;
 import com.github.tatianepro.biblioteca.api.exception.BusinessException;
 import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.model.entity.Loan;
@@ -123,6 +125,29 @@ public class LoanControllerTest {
                 .andExpect( status().isBadRequest() )
                 .andExpect( jsonPath("errors", Matchers.hasSize(1)))
                 .andExpect( jsonPath("errors[0]").value("Book already borrowed."));
+    }
+
+    @Test
+    @DisplayName("Deve retornar um livro.")
+    public void returnLoanBookTest() throws Exception {
+        //cenario
+        Long id = 1L;
+        ReturnedLoanDto returnedLoanDto = ReturnedLoanDto.builder().returned(true).build();
+        String json = new ObjectMapper().writeValueAsString(returnedLoanDto);
+        Loan loan = Loan.builder().id(id).build();
+
+        BDDMockito.given(loanService.getById(Mockito.anyLong())).willReturn(Optional.of(loan));
+
+        //execucao e verificacao
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .patch(LOAN_API.concat("/" + id))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                ).andExpect( status().isOk() );
+
+        Mockito.verify(loanService, Mockito.times(1)).update(loan);
     }
 
 }

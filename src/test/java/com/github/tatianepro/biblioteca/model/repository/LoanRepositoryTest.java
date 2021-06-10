@@ -1,9 +1,7 @@
 package com.github.tatianepro.biblioteca.model.repository;
 
-import com.github.tatianepro.biblioteca.api.resource.BookControllerTest;
 import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.model.entity.Loan;
-import com.github.tatianepro.biblioteca.service.LoanService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

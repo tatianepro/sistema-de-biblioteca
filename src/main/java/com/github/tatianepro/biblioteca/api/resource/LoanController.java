@@ -1,6 +1,7 @@
 package com.github.tatianepro.biblioteca.api.resource;
 
 import com.github.tatianepro.biblioteca.api.dto.LoanDto;
+import com.github.tatianepro.biblioteca.api.dto.ReturnedLoanDto;
 import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.model.entity.Loan;
 import com.github.tatianepro.biblioteca.service.BookService;
@@ -35,6 +36,13 @@ public class LoanController {
                 .build();
         Loan loanSaved = loanService.save(loan);
         return loanSaved.getId();
+    }
+
+    @PatchMapping("/{id}")
+    public void returnBook(@PathVariable Long id, @RequestBody ReturnedLoanDto returnedLoanDto) {
+        Loan loanFound = loanService.getById(id).get();
+        returnedLoanDto.setReturned(returnedLoanDto.getReturned());
+        loanService.update(loanFound);
     }
 
 }
