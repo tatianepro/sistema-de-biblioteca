@@ -56,13 +56,13 @@ public class LoanControllerTest {
     @DisplayName("Deve realizar um emprestimo.")
     public void createLoantest() throws Exception {
         //cenario
-        LoanDto loanDto = LoanDto.builder().isbn("9781234567897").customer("Fulano").build();
+        LoanDto loanDto = LoanDto.builder().isbn("9781234567897").email("fulano@email.com").customer("Fulano").build();
         String json = new ObjectMapper().writeValueAsString(loanDto);
 
         Books book = Books.builder().id(1L).isbn("9781234567897").build();
         BDDMockito.given(bookService.getBookByIsbn("9781234567897")).willReturn(Optional.of(book));
 
-        Loan loan = Loan.builder().id(1L).customer("Fulano").book(book).loanDate(LocalDate.now()).build();
+        Loan loan = Loan.builder().id(1L).customer("fulano@email.com").customer("Fulano").book(book).loanDate(LocalDate.now()).build();
         BDDMockito.given(loanService.save(Mockito.any(Loan.class))).willReturn(loan);
 
         //execucao
@@ -84,7 +84,7 @@ public class LoanControllerTest {
     @DisplayName("Deve retornar erro ao tentar fazer empréstimo de um livro inexistente.")
     public void invalidIsbnCreateLoanTest() throws Exception {
         //cenario
-        LoanDto loanDto = LoanDto.builder().isbn("9781234567897").customer("Fulano").build();
+        LoanDto loanDto = LoanDto.builder().isbn("9781234567897").email("fulano@email.com").customer("Fulano").build();
         String json = new ObjectMapper().writeValueAsString(loanDto);
 
         BDDMockito.given(bookService.getBookByIsbn("9781234567897")).willReturn(Optional.empty());
@@ -108,7 +108,7 @@ public class LoanControllerTest {
     @DisplayName("Deve retornar erro ao tentar fazer empréstimo de um livro emprestado.")
     public void loanedBookErrorOnCreateLoanTest() throws Exception {
         //cenario
-        LoanDto loanDto = LoanDto.builder().isbn("9781234567897").customer("Fulano").build();
+        LoanDto loanDto = LoanDto.builder().isbn("9781234567897").email("fulano@email.com").customer("Fulano").build();
         String json = new ObjectMapper().writeValueAsString(loanDto);
 
         Books book = Books.builder().id(1L).isbn("9781234567897").build();

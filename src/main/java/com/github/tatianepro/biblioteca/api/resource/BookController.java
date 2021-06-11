@@ -1,7 +1,6 @@
 package com.github.tatianepro.biblioteca.api.resource;
 
 import com.github.tatianepro.biblioteca.api.dto.BookDto;
-import com.github.tatianepro.biblioteca.api.dto.LoanDto;
 import com.github.tatianepro.biblioteca.api.dto.LoanFilterDto;
 import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.model.entity.Loan;
