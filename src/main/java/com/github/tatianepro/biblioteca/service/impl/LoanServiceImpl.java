@@ -1,6 +1,7 @@
 package com.github.tatianepro.biblioteca.service.impl;
 
 import com.github.tatianepro.biblioteca.api.exception.BusinessException;
+import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.model.entity.Loan;
 import com.github.tatianepro.biblioteca.model.repository.LoanRepository;
 import com.github.tatianepro.biblioteca.service.LoanService;
@@ -40,5 +41,10 @@ public class LoanServiceImpl implements LoanService {
     @Override
     public Page<Loan> find(Loan loan, Pageable pageRequest) {
         return loanRepository.findByBookIsbnOrCustomer(loan.getBook().getIsbn(), loan.getCustomer(), pageRequest);
+    }
+
+    @Override
+    public Page<Loan> getLoansByBook(Books book, Pageable pageRequest) {
+        return loanRepository.findByBook(book, pageRequest);
     }
 }

@@ -1,8 +1,13 @@
 package com.github.tatianepro.biblioteca.api.resource;
 
 import com.github.tatianepro.biblioteca.api.dto.BookDto;
+import com.github.tatianepro.biblioteca.api.dto.LoanDto;
+import com.github.tatianepro.biblioteca.api.dto.LoanFilterDto;
 import com.github.tatianepro.biblioteca.model.entity.Books;
+import com.github.tatianepro.biblioteca.model.entity.Loan;
 import com.github.tatianepro.biblioteca.service.BookService;
+import com.github.tatianepro.biblioteca.service.LoanService;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -15,17 +20,14 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/books")
 public class BookController {
 
-    private BookService bookService;
-    private ModelMapper modelMapper;
-
-    public BookController(BookService bookService, ModelMapper modelMapper) {
-        this.bookService = bookService;
-        this.modelMapper = modelMapper;
-    }
+    private final BookService bookService;
+    private final ModelMapper modelMapper;
+    private final LoanService loanService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -74,6 +76,23 @@ public class BookController {
                 .map(book -> modelMapper.map(book, BookDto.class))
                 .collect(Collectors.toList());
         return new PageImpl<BookDto>(bookListDto, pageRequest, pageResult.getTotalElements());
+    }
+
+    @GetMapping("{id}/loans")
+    public Page<LoanFilterDto> getLoansByBook(@PathVariable("id") Long id, Pageable pageRequest) {
+        Books book = bookService.getById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Page<Loan> loansByBookPageable = loanService.getLoansByBook(book, pageRequest);
+        List<LoanFilterDto> dtoList = loansByBookPageable
+                .getContent()
+                .stream()
+                .map(loan -> {
+                    Books loanBook = loan.getBook();
+                    BookDto bookDto = modelMapper.map(loanBook, BookDto.class);
+                    LoanFilterDto loanDto = modelMapper.map(loan, LoanFilterDto.class);
+                    loanDto.setBookDto(bookDto);
+                    return loanDto;
+                }).collect(Collectors.toList());
+        return new PageImpl<LoanFilterDto>(dtoList, pageRequest, loansByBookPageable.getTotalElements());
     }
 
 }
