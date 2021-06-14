@@ -8,6 +8,7 @@ import com.github.tatianepro.biblioteca.service.BookService;
 import com.github.tatianepro.biblioteca.service.LoanService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 @SwaggerDefinition(tags = {
         @Tag(name = "Book Api", description = "resource for Biblioteca API")
 })
+@Slf4j
 public class BookController {
 
     private final BookService bookService;
@@ -41,6 +43,7 @@ public class BookController {
             @ApiResponse(code = 400, message = "Invalid argument")
     })
     public BookDto create(@RequestBody @Valid BookDto bookDto) {
+        log.info(" -----> creating a book for isbn {}", bookDto.getIsbn());
         Books entity = modelMapper.map( bookDto, Books.class );
         entity = bookService.save(entity);
         return modelMapper.map( entity, BookDto.class );
@@ -54,6 +57,7 @@ public class BookController {
             @ApiResponse(code = 404, message = "Book not found")
     })
     public BookDto get(@PathVariable Long id) {
+        log.info(" -----> obtaining book detail for id {}", id);
         return bookService
                 .getById(id)
                 .map(book -> modelMapper.map(book, BookDto.class))
@@ -68,6 +72,7 @@ public class BookController {
             @ApiResponse(code = 404, message = "Book not found")
     })
     public void delete(@PathVariable Long id) {
+        log.info(" -----> deleting a book of id {}", id);
         Books book = bookService
                 .getById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -81,6 +86,7 @@ public class BookController {
             @ApiResponse(code = 404, message = "Book not found")
     })
     public BookDto put(@PathVariable Long id, @RequestBody @Valid BookDto bookDto) {
+        log.info(" -----> updating the book details for id {}", id);
         return bookService
                 .getById(id)
                 .map(book -> {
@@ -98,6 +104,7 @@ public class BookController {
             @ApiResponse(code = 200, message = "Book was found")
     })
     public Page<BookDto> find(BookDto bookDto, Pageable pageRequest) {
+        log.info(" -----> searching for books of isbn {}", bookDto.getIsbn());
         Books filter = modelMapper.map(bookDto, Books.class);
         Page<Books> pageResult = bookService.find(filter, pageRequest);
         List<BookDto> bookListDto = pageResult.getContent()
@@ -114,6 +121,7 @@ public class BookController {
             @ApiResponse(code = 404, message = "Book not found")
     })
     public Page<LoanFilterDto> getLoansByBook(@PathVariable("id") Long id, Pageable pageRequest) {
+        log.info(" -----> searching for borrowed book for id {}", id);
         Books book = bookService.getById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         Page<Loan> loansByBookPageable = loanService.getLoansByBook(book, pageRequest);
         List<LoanFilterDto> dtoList = loansByBookPageable

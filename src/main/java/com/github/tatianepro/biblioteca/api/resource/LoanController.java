@@ -11,6 +11,7 @@ import com.github.tatianepro.biblioteca.service.BookService;
 import com.github.tatianepro.biblioteca.service.LoanService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 @SwaggerDefinition(tags = {
         @Tag(name = "Loan Api", description = "resource for Biblioteca API")
 })
+@Slf4j
 public class LoanController {
 
     private final BookService bookService;
@@ -45,7 +47,7 @@ public class LoanController {
             @ApiResponse(code = 400, message = "Invalid argument")
     })
     public Long create(@RequestBody @Valid LoanDto loanDto) {
-
+        log.info(" -----> creating a loan for book isbn {}", loanDto.getIsbn());
         Books book = bookService
                 .getBookByIsbn(loanDto.getIsbn())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Book not found for passed isbn"));
@@ -68,6 +70,7 @@ public class LoanController {
             @ApiResponse(code = 404, message = "Loan not found")
     })
     public void returnBook(@PathVariable Long id, @RequestBody @Valid ReturnedLoanDto returnedLoanDto) {
+        log.info(" -----> updating loan book status for id {}", id);
         if (returnedLoanDto.getReturned() == null) {
             throw new BusinessException("Value must be true or false");
         }
@@ -85,6 +88,7 @@ public class LoanController {
             @ApiResponse(code = 400, message = "Invalid argument")
     })
     public Page<LoanFilterDto> find(LoanFilterDto loanFilterDto, Pageable pageRequest) {
+        log.info(" -----> searching for books loan isbn {}", loanFilterDto.getIsbn());
         if (loanFilterDto.getIsbn() == null) {
             throw new BusinessException("Must fill the isbn field");
         }
