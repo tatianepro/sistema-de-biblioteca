@@ -4,6 +4,7 @@ import com.github.tatianepro.biblioteca.api.dto.BookDto;
 import com.github.tatianepro.biblioteca.api.dto.LoanDto;
 import com.github.tatianepro.biblioteca.api.dto.LoanFilterDto;
 import com.github.tatianepro.biblioteca.api.dto.ReturnedLoanDto;
+import com.github.tatianepro.biblioteca.api.exception.BusinessException;
 import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.model.entity.Loan;
 import com.github.tatianepro.biblioteca.service.BookService;
@@ -43,6 +44,7 @@ public class LoanController {
                 .builder()
                 .book(book)
                 .customer(loanDto.getCustomer())
+                .customerEmail(loanDto.getEmail())
                 .loanDate(LocalDate.now())
                 .build();
         Loan loanSaved = loanService.save(loan);
@@ -51,6 +53,9 @@ public class LoanController {
 
     @PatchMapping("/{id}")
     public void returnBook(@PathVariable Long id, @RequestBody ReturnedLoanDto returnedLoanDto) {
+        if (returnedLoanDto.getReturned() == null) {
+            throw new BusinessException("Value must be true or false");
+        }
         Loan loanFound = loanService
                 .getById(id)
                 .orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -61,6 +66,9 @@ public class LoanController {
     @GetMapping
     public Page<LoanFilterDto> find(LoanFilterDto loanFilterDto, Pageable pageRequest) {
 
+        BookDto bookFilterDto = getBookDto(loanFilterDto);
+        loanFilterDto.setBookDto(bookFilterDto);
+
         Loan loanMapped = modelMapper.map(loanFilterDto, Loan.class);
 
         Page<Loan> loanPage = loanService.find(loanMapped, pageRequest);
@@ -70,13 +78,17 @@ public class LoanController {
                 .stream()
                 .map( loan -> {
                     Books book = loan.getBook();
-                    BookDto bookDto = modelMapper.map(book, BookDto.class);
-                    LoanFilterDto loanDto = modelMapper.map(loan, LoanFilterDto.class);
-                    loanDto.setBookDto(bookDto);
-                    return loanDto;
+                    BookDto mappedBookDto = modelMapper.map(book, BookDto.class);
+                    LoanFilterDto mappedLoanDto = modelMapper.map(loan, LoanFilterDto.class);
+                    mappedLoanDto.setBookDto(mappedBookDto);
+                    return mappedLoanDto;
                 }).collect(Collectors.toList());
 
         return new PageImpl<LoanFilterDto>(loans, pageRequest, loanPage.getTotalElements());
+    }
+
+    private BookDto getBookDto(LoanFilterDto loanFilterDto) {
+        return BookDto.builder().isbn(loanFilterDto.getIsbn()).build();
     }
 
 }
