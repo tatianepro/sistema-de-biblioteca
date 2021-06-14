@@ -6,6 +6,7 @@ import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.model.entity.Loan;
 import com.github.tatianepro.biblioteca.service.BookService;
 import com.github.tatianepro.biblioteca.service.LoanService;
+import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/books")
+@Api(tags = {"Book Api"})
+@SwaggerDefinition(tags = {
+        @Tag(name = "Book Api", description = "resource for Biblioteca API")
+})
 public class BookController {
 
     private final BookService bookService;
@@ -30,6 +35,11 @@ public class BookController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @ApiOperation("Creates a book")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Book successfully created"),
+            @ApiResponse(code = 400, message = "Invalid argument")
+    })
     public BookDto create(@RequestBody @Valid BookDto bookDto) {
         Books entity = modelMapper.map( bookDto, Books.class );
         entity = bookService.save(entity);
@@ -37,6 +47,12 @@ public class BookController {
     }
 
     @GetMapping("{id}")
+    @ApiOperation("Gets a book detail by ID ")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Book was found"),
+            @ApiResponse(code = 400, message = "Invalid argument"),
+            @ApiResponse(code = 404, message = "Book not found")
+    })
     public BookDto get(@PathVariable Long id) {
         return bookService
                 .getById(id)
@@ -46,6 +62,11 @@ public class BookController {
 
     @DeleteMapping("{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ApiOperation("Deletes a book by ID")
+    @ApiResponses({
+            @ApiResponse(code = 204, message = "Book successfully deleted"),
+            @ApiResponse(code = 404, message = "Book not found")
+    })
     public void delete(@PathVariable Long id) {
         Books book = bookService
                 .getById(id)
@@ -54,7 +75,12 @@ public class BookController {
     }
 
     @PutMapping("{id}")
-    public BookDto put(@PathVariable Long id, @RequestBody BookDto bookDto) {
+    @ApiOperation("Updates a book by ID and its properties")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Book successfully updated"),
+            @ApiResponse(code = 404, message = "Book not found")
+    })
+    public BookDto put(@PathVariable Long id, @RequestBody @Valid BookDto bookDto) {
         return bookService
                 .getById(id)
                 .map(book -> {
@@ -67,6 +93,10 @@ public class BookController {
     }
 
     @GetMapping
+    @ApiOperation("Finds a book list by parameters (optionally by page parameters)")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Book was found")
+    })
     public Page<BookDto> find(BookDto bookDto, Pageable pageRequest) {
         Books filter = modelMapper.map(bookDto, Books.class);
         Page<Books> pageResult = bookService.find(filter, pageRequest);
@@ -78,6 +108,11 @@ public class BookController {
     }
 
     @GetMapping("{id}/loans")
+    @ApiOperation("Finds a borrowed book list by ID (optionally by page parameters)")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Book was found"),
+            @ApiResponse(code = 404, message = "Book not found")
+    })
     public Page<LoanFilterDto> getLoansByBook(@PathVariable("id") Long id, Pageable pageRequest) {
         Books book = bookService.getById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         Page<Loan> loansByBookPageable = loanService.getLoansByBook(book, pageRequest);

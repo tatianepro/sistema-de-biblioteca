@@ -9,6 +9,7 @@ import com.github.tatianepro.biblioteca.model.entity.Books;
 import com.github.tatianepro.biblioteca.model.entity.Loan;
 import com.github.tatianepro.biblioteca.service.BookService;
 import com.github.tatianepro.biblioteca.service.LoanService;
+import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -18,15 +19,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/loans")
 @RequiredArgsConstructor
+@Api(tags = {"Loan Api"})
+@SwaggerDefinition(tags = {
+        @Tag(name = "Loan Api", description = "resource for Biblioteca API")
+})
 public class LoanController {
 
     private final BookService bookService;
@@ -35,7 +39,12 @@ public class LoanController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Long create(@RequestBody LoanDto loanDto) {
+    @ApiOperation("Creates a loan from a valid book isbn")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Loan successfully created"),
+            @ApiResponse(code = 400, message = "Invalid argument")
+    })
+    public Long create(@RequestBody @Valid LoanDto loanDto) {
 
         Books book = bookService
                 .getBookByIsbn(loanDto.getIsbn())
@@ -52,7 +61,13 @@ public class LoanController {
     }
 
     @PatchMapping("/{id}")
-    public void returnBook(@PathVariable Long id, @RequestBody ReturnedLoanDto returnedLoanDto) {
+    @ApiOperation("Updates the loan status with true or false")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Loan status successfully updated"),
+            @ApiResponse(code = 400, message = "Invalid argument"),
+            @ApiResponse(code = 404, message = "Loan not found")
+    })
+    public void returnBook(@PathVariable Long id, @RequestBody @Valid ReturnedLoanDto returnedLoanDto) {
         if (returnedLoanDto.getReturned() == null) {
             throw new BusinessException("Value must be true or false");
         }
@@ -64,8 +79,15 @@ public class LoanController {
     }
 
     @GetMapping
+    @ApiOperation("Finds a loan book list")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Book was found"),
+            @ApiResponse(code = 400, message = "Invalid argument")
+    })
     public Page<LoanFilterDto> find(LoanFilterDto loanFilterDto, Pageable pageRequest) {
-
+        if (loanFilterDto.getIsbn() == null) {
+            throw new BusinessException("Must fill the isbn field");
+        }
         BookDto bookFilterDto = getBookDto(loanFilterDto);
         loanFilterDto.setBookDto(bookFilterDto);
 
