@@ -5,3 +5,4 @@ Projeto de empréstimos de livros de uma biblioteca, com serviços de: cadastram
 
 
 [![Build Status](https://travis-ci.com/tatianepro/sistema-de-biblioteca.svg?branch=main)](https://travis-ci.com/tatianepro/sistema-de-biblioteca)
+[![codecov](https://codecov.io/gh/tatianepro/sistema-de-biblioteca/branch/main/graph/badge.svg?token=B80183Y2J4)](https://codecov.io/gh/tatianepro/sistema-de-biblioteca)
