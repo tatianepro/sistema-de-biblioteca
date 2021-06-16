@@ -34,3 +34,4 @@ build/
 
 ### Spring Boot ###
 appfile.log
+.gradle
